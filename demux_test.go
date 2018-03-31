@@ -30,7 +30,7 @@ func TestNewTopic(t *testing.T) {
 				return
 			}
 
-			if got.Users == nil {
+			if got.users == nil {
 				t.Errorf("NewTopic() returned with nil Users map")
 				return
 			}

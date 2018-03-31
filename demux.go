@@ -6,13 +6,17 @@ import (
 	"sync"
 )
 
-var topics = make(map[string]*Topic)
+var (
+	rw sync.RWMutex
+
+	topics = make(map[string]*Topic)
+)
 
 // Topic is used as a collection of users. You can add Users and Devices to
 // Users. Topic has to have a unique name.
 type Topic struct {
 	Name  string
-	Users map[string]User
+	users map[string]*User
 	rw    sync.RWMutex
 }
 
@@ -20,14 +24,15 @@ type Topic struct {
 // unique name.
 type User struct {
 	Name    string
-	Devices []Device
+	devices []*Device
 }
 
 // Device is a unique writing interface. It has a name and an io.Writer onto
 // which messages can be written.
 type Device struct {
 	Name   string
-	Writer io.Writer
+	writer io.Writer
+	once   sync.Once
 }
 
 // NewTopic creates a topic with empty initialized Users and Devices. Calling
@@ -37,16 +42,30 @@ func NewTopic(name string) (*Topic, error) {
 		return nil, fmt.Errorf("name is required")
 	}
 
-	if _, ok := topics[name]; ok {
+	if topicExists(name) {
 		return nil, fmt.Errorf("topic with name %q already exists", name)
 	}
 
-	t := Topic{
+	t := &Topic{
 		Name:  name,
-		Users: make(map[string]User),
+		users: make(map[string]*User),
 	}
 
-	topics[name] = &t
+	doAddTopic(t)
 
-	return &t, nil
+	return t, nil
+}
+
+func topicExists(name string) bool {
+	rw.RLock()
+	defer rw.RUnlock()
+	_, ok := topics[name]
+
+	return ok
+}
+
+func doAddTopic(topic *Topic) {
+	rw.Lock()
+	topics[topic.Name] = topic
+	rw.Unlock()
 }
