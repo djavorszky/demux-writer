@@ -49,3 +49,16 @@ func (u *User) deviceExists(name string) bool {
 
 	return false
 }
+
+/*
+	We only need RegisterDevice, but Device should have a user
+	or some other identifier to it, so that when registering,
+	we can register the device with an identifier.
+
+	Meaning, that we can WriteTo(identifier) would write to
+	all devices. But we also need a deviceID of some sort to
+	be able to write to a specific device.
+
+	Also deviceLabels, so we can write to a lot of devices
+	irrespective of the "owners".
+*/
