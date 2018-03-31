@@ -25,6 +25,7 @@ type Topic struct {
 type User struct {
 	Name    string
 	devices []*Device
+	rw      sync.RWMutex
 }
 
 // Device is a unique writing interface. It has a name and an io.Writer onto
@@ -32,7 +33,6 @@ type User struct {
 type Device struct {
 	Name   string
 	writer io.Writer
-	once   sync.Once
 }
 
 // NewTopic creates a topic with empty initialized Users and Devices. Calling

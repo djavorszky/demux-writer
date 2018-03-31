@@ -1,6 +1,8 @@
 package demux
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // AddUser adds a user to the topic. If a user with the name already exists, an error
 // is returned.
