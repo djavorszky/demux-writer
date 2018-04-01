@@ -92,29 +92,6 @@ func (t *Topic) addUser(name string) (*User, error) {
 	return user, nil
 }
 
-// RegisterDevice registers a Device to a user. Creates the user if it doesn't
-// exist yet. Fails if User already has a device with the same DeviceID.
-func (t *Topic) RegisterDevice(d *Device) error {
-	if err := d.validate(); err != nil {
-		return fmt.Errorf("validation failed: %v", err)
-	}
-
-	user := t.getUser(d.UserID)
-
-	if user.deviceExists(d.DeviceID) {
-		return fmt.Errorf("device %q already exists for user", d.DeviceID)
-	}
-
-	user.doAddDevice(d)
-
-	return nil
-}
-
-// UnregisterDevice removes the device from the User.
-func (t *Topic) UnregisterDevice(userID, deviceID string) {
-	t.getUser(userID).deleteDevice(deviceID)
-}
-
 func (t *Topic) getUser(name string) *User {
 	t.rw.RLock()
 	user, ok := t.users[name]
@@ -144,14 +121,4 @@ func (t *Topic) doAddUser(user *User) {
 	t.rw.Lock()
 	t.users[user.Name] = user
 	t.rw.Unlock()
-}
-
-func (t *Topic) doDeleteUser(user *User) {
-	t.rw.Lock()
-	delete(t.users, user.Name)
-	t.rw.Unlock()
-
-	for _, d := range user.devices {
-		user.deleteDevice(d.DeviceID)
-	}
 }

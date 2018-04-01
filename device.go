@@ -2,33 +2,29 @@ package demux
 
 import (
 	"fmt"
-	"io"
 )
 
-// addDevice adds a writing device to the User in question. Returns an error
-// if name is empty or writer is nil
-func (u *User) addDevice(name string, w io.Writer) error {
-	if name == "" {
-		return fmt.Errorf("name is required")
+// RegisterDevice registers a Device to a user. Creates the user if it doesn't
+// exist yet. Fails if User already has a device with the same DeviceID.
+func (t *Topic) RegisterDevice(d *Device) error {
+	if err := d.validate(); err != nil {
+		return fmt.Errorf("validation failed: %v", err)
 	}
 
-	if w == nil {
-		return fmt.Errorf("writer is nil")
+	user := t.getUser(d.UserID)
+
+	if user.deviceExists(d.DeviceID) {
+		return fmt.Errorf("device %q already exists for user", d.DeviceID)
 	}
 
-	if u.deviceExists(name) {
-		return fmt.Errorf("device with name %q already exists", name)
-	}
-
-	d := &Device{
-		UserID:   u.Name,
-		DeviceID: name,
-		writer:   w,
-	}
-
-	u.doAddDevice(d)
+	user.doAddDevice(d)
 
 	return nil
+}
+
+// UnregisterDevice removes the device from the User.
+func (t *Topic) UnregisterDevice(userID, deviceID string) {
+	t.getUser(userID).deleteDevice(deviceID)
 }
 
 func (d *Device) validate() error {
@@ -74,16 +70,3 @@ func (u *User) deleteDevice(deviceID string) {
 
 	delete(u.devices, deviceID)
 }
-
-/*
-	We only need RegisterDevice, but Device should have a user
-	or some other identifier to it, so that when registering,
-	we can register the device with an identifier.
-
-	Meaning, that we can WriteTo(identifier) would write to
-	all devices. But we also need a deviceID of some sort to
-	be able to write to a specific device.
-
-	Also deviceLabels, so we can write to a lot of devices
-	irrespective of the "owners".
-*/
