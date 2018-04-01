@@ -5,9 +5,9 @@ import (
 	"io"
 )
 
-// AddDevice adds a writing device to the User in question. Returns an error
+// addDevice adds a writing device to the User in question. Returns an error
 // if name is empty or writer is nil
-func (u *User) AddDevice(name string, w io.Writer) error {
+func (u *User) addDevice(name string, w io.Writer) error {
 	if name == "" {
 		return fmt.Errorf("name is required")
 	}
@@ -21,6 +21,7 @@ func (u *User) AddDevice(name string, w io.Writer) error {
 	}
 
 	d := &Device{
+		UserID:   u.Name,
 		DeviceID: name,
 		writer:   w,
 	}

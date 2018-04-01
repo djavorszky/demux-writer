@@ -71,9 +71,9 @@ func doAddTopic(topic *Topic) {
 	rw.Unlock()
 }
 
-// AddUser adds a user to the topic. If a user with the name already exists, an error
+// addUser adds a user to the topic. If a user with the name already exists, an error
 // is returned.
-func (t *Topic) AddUser(name string) (*User, error) {
+func (t *Topic) addUser(name string) (*User, error) {
 	if name == "" {
 		return nil, fmt.Errorf("name is required")
 	}

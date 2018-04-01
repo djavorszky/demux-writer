@@ -60,7 +60,7 @@ func TestTopic_AddUser(t *testing.T) {
 				user *User
 				err  error
 			)
-			if user, err = topic.AddUser(tt.args.name); (err != nil) != tt.wantErr {
+			if user, err = topic.addUser(tt.args.name); (err != nil) != tt.wantErr {
 				t.Errorf("Topic.AddUser() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
