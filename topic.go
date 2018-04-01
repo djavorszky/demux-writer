@@ -24,7 +24,7 @@ type Topic struct {
 // unique name.
 type User struct {
 	Name    string
-	devices []*Device
+	devices map[string]*Device
 	rw      sync.RWMutex
 }
 

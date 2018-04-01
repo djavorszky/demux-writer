@@ -50,20 +50,28 @@ func (u *User) doAddDevice(device *Device) {
 	u.rw.Lock()
 	defer u.rw.Unlock()
 
-	u.devices = append(u.devices, device)
+	u.devices[device.DeviceID] = device
 }
 
 func (u *User) deviceExists(deviceID string) bool {
 	u.rw.RLock()
 	defer u.rw.RUnlock()
 
-	for _, d := range u.devices {
-		if d.DeviceID == deviceID {
-			return true
-		}
+	_, ok := u.devices[deviceID]
+
+	return ok
+}
+
+func (u *User) deleteDevice(deviceID string) {
+	u.rw.RLock()
+	_, ok := u.devices[deviceID]
+	u.rw.RUnlock()
+
+	if !ok {
+		return
 	}
 
-	return false
+	delete(u.devices, deviceID)
 }
 
 /*

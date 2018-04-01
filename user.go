@@ -17,7 +17,7 @@ func (t *Topic) AddUser(name string) (*User, error) {
 
 	user := &User{
 		Name:    name,
-		devices: make([]*Device, 0),
+		devices: make(map[string]*Device, 0),
 	}
 
 	t.doAddUser(user)
@@ -43,6 +43,11 @@ func (t *Topic) RegisterDevice(d *Device) error {
 	return nil
 }
 
+// UnregisterDevice removes the device from the User.
+func (t *Topic) UnregisterDevice(userID, deviceID string) {
+	t.getUser(userID).deleteDevice(deviceID)
+}
+
 func (t *Topic) getUser(name string) *User {
 	t.rw.RLock()
 	user, ok := t.users[name]
@@ -51,7 +56,7 @@ func (t *Topic) getUser(name string) *User {
 	if !ok {
 		user = &User{
 			Name:    name,
-			devices: make([]*Device, 0),
+			devices: make(map[string]*Device, 0),
 		}
 
 		t.doAddUser(user)
@@ -78,4 +83,8 @@ func (t *Topic) doDeleteUser(user *User) {
 	t.rw.Lock()
 	delete(t.users, user.Name)
 	t.rw.Unlock()
+
+	for _, d := range user.devices {
+		user.deleteDevice(d.DeviceID)
+	}
 }

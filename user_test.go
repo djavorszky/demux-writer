@@ -120,3 +120,38 @@ func TestTopic_getUser(t *testing.T) {
 		})
 	}
 }
+
+func TestTopic_UnregisterDevice(t *testing.T) {
+	var testIOWriter bytes.Buffer
+	type args struct {
+		userID   string
+		deviceID string
+	}
+	tests := []struct {
+		name     string
+		args     args
+		todelete args
+		wantFail bool
+	}{
+		{"Valid", args{userID: "user", deviceID: "device"}, args{userID: "user", deviceID: "device"}, false},
+		{"Not_delete", args{userID: "user", deviceID: "device"}, args{userID: "user", deviceID: "asd"}, true},
+	}
+	topic, _ := NewTopic("TestTopic_UnregisterDevice")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			topic.RegisterDevice(&Device{
+				UserID:   tt.args.userID,
+				DeviceID: tt.args.deviceID,
+				writer:   &testIOWriter,
+			})
+
+			topic.UnregisterDevice(tt.todelete.userID, tt.todelete.deviceID)
+
+			u := topic.getUser(tt.args.userID)
+
+			if u.deviceExists(tt.args.deviceID) && !tt.wantFail {
+				t.Errorf("should have deleted device, didn't")
+			}
+		})
+	}
+}
