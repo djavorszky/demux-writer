@@ -21,11 +21,27 @@ func (u *User) AddDevice(name string, w io.Writer) error {
 	}
 
 	d := &Device{
-		Name:   name,
-		writer: w,
+		DeviceID: name,
+		writer:   w,
 	}
 
 	u.doAddDevice(d)
+
+	return nil
+}
+
+func (d *Device) validate() error {
+	if d.UserID == "" {
+		return fmt.Errorf("userID required")
+	}
+
+	if d.DeviceID == "" {
+		return fmt.Errorf("deviceID required")
+	}
+
+	if d.writer == nil {
+		return fmt.Errorf("writer must be non-nil")
+	}
 
 	return nil
 }
@@ -37,12 +53,12 @@ func (u *User) doAddDevice(device *Device) {
 	u.devices = append(u.devices, device)
 }
 
-func (u *User) deviceExists(name string) bool {
+func (u *User) deviceExists(deviceID string) bool {
 	u.rw.RLock()
 	defer u.rw.RUnlock()
 
 	for _, d := range u.devices {
-		if d.Name == name {
+		if d.DeviceID == deviceID {
 			return true
 		}
 	}

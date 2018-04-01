@@ -31,8 +31,9 @@ type User struct {
 // Device is a unique writing interface. It has a name and an io.Writer onto
 // which messages can be written.
 type Device struct {
-	Name   string
-	writer io.Writer
+	UserID   string
+	DeviceID string
+	writer   io.Writer
 }
 
 // NewTopic creates a topic with empty initialized Users and Devices. Calling
