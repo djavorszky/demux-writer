@@ -40,8 +40,10 @@ func (t *Topic) WriteToUser(userID string, message []byte) error {
 
 	u := t.getUser(userID)
 	for _, d := range u.devices {
-		fmt.Println(d)
-		d.Writer.Write(message)
+		_, err := d.Writer.Write(message)
+		if err != nil {
+			return fmt.Errorf("failed writing message: %v", err)
+		}
 	}
 
 	return nil
@@ -56,7 +58,10 @@ func (t *Topic) WriteToDevice(userID, deviceID string, message []byte) error {
 		return fmt.Errorf("couldn't get device: %v", err)
 	}
 
-	d.Writer.Write(message)
+	_, err = d.Writer.Write(message)
+	if err != nil {
+		return fmt.Errorf("write failed: %v", err)
+	}
 
 	return nil
 }
