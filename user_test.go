@@ -1,12 +1,8 @@
 package demux
 
-import (
-	"bufio"
-	"bytes"
-	"testing"
-)
+import "testing"
 
-func TestUser_AddDevice(t *testing.T) {
+func TestTopic_AddUser(t *testing.T) {
 	type args struct {
 		name string
 	}
@@ -20,14 +16,15 @@ func TestUser_AddDevice(t *testing.T) {
 		// Duplicate name has to come after Valid name!
 		{"Duplicate name", args{"name"}, true},
 	}
-	topic, _ := NewTopic("TestUser_AddDevice")
-	user, _ := topic.AddUser("TestUser")
+	topic, _ := NewTopic("TestTopic_AddUser")
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var b bytes.Buffer
-			writer := bufio.NewWriter(&b)
-			if err := user.AddDevice(tt.args.name, writer); (err != nil) != tt.wantErr {
-				t.Errorf("User.AddDevice() error = %v, wantErr %v", err, tt.wantErr)
+			var (
+				user *User
+				err  error
+			)
+			if user, err = topic.AddUser(tt.args.name); (err != nil) != tt.wantErr {
+				t.Errorf("Topic.AddUser() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
@@ -35,11 +32,30 @@ func TestUser_AddDevice(t *testing.T) {
 				return
 			}
 
-		})
+			if user == nil {
+				t.Errorf("User is nil")
+				return
+			}
 
-		// Test nil writer error
-		if err := user.AddDevice("nil writer", nil); err == nil {
-			t.Errorf("AddDevice should have failed with nil writer argument.")
-		}
+			if user.Name != tt.args.name {
+				t.Errorf("User added with wrong name. Expected: %q, got: %q", tt.args.name, user.Name)
+				return
+			}
+
+			addedUser, ok := topic.users[tt.args.name]
+			if !ok {
+				t.Errorf("User should have been added, wasn't")
+				return
+			}
+
+			if addedUser.Name != user.Name {
+				t.Errorf("Expected user to be added under name %q, got %q", user.Name, addedUser.Name)
+				return
+			}
+
+			if user.devices == nil {
+				t.Errorf("Devices added with nil slice")
+			}
+		})
 	}
 }

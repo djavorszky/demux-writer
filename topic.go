@@ -2,45 +2,70 @@ package demux
 
 import (
 	"fmt"
+	"io"
+	"sync"
 )
 
-// AddUser adds a user to the topic. If a user with the name already exists, an error
-// is returned.
-func (t *Topic) AddUser(name string) (*User, error) {
+var (
+	rw sync.RWMutex
+
+	topics = make(map[string]*Topic)
+)
+
+// Topic is used as a collection of users. You can add Users and Devices to
+// Users. Topic has to have a unique name.
+type Topic struct {
+	Name  string
+	users map[string]*User
+	rw    sync.RWMutex
+}
+
+// User represents a grouping of a list of Devices. User has to have a
+// unique name.
+type User struct {
+	Name    string
+	devices []*Device
+	rw      sync.RWMutex
+}
+
+// Device is a unique writing interface. It has a name and an io.Writer onto
+// which messages can be written.
+type Device struct {
+	Name   string
+	writer io.Writer
+}
+
+// NewTopic creates a topic with empty initialized Users and Devices. Calling
+// NewTopic with a name that already exists will result in an error.
+func NewTopic(name string) (*Topic, error) {
 	if name == "" {
 		return nil, fmt.Errorf("name is required")
 	}
 
-	if t.userExists(name) {
-		return nil, fmt.Errorf("user with name %q already exists", name)
+	if topicExists(name) {
+		return nil, fmt.Errorf("topic with name %q already exists", name)
 	}
 
-	user := &User{
-		Name:    name,
-		devices: make([]*Device, 0),
+	t := &Topic{
+		Name:  name,
+		users: make(map[string]*User),
 	}
 
-	t.doAddUser(user)
+	doAddTopic(t)
 
-	return user, nil
+	return t, nil
 }
 
-func (t *Topic) userExists(name string) bool {
-	t.rw.RLock()
-	defer t.rw.RUnlock()
-	_, ok := t.users[name]
+func topicExists(name string) bool {
+	rw.RLock()
+	defer rw.RUnlock()
+	_, ok := topics[name]
 
 	return ok
 }
 
-func (t *Topic) doAddUser(user *User) {
-	t.rw.Lock()
-	t.users[user.Name] = user
-	t.rw.Unlock()
-}
-
-func (t *Topic) doDeleteUser(user *User) {
-	t.rw.Lock()
-	delete(t.users, user.Name)
-	t.rw.Unlock()
+func doAddTopic(topic *Topic) {
+	rw.Lock()
+	topics[topic.Name] = topic
+	rw.Unlock()
 }

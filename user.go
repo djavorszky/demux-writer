@@ -2,63 +2,45 @@ package demux
 
 import (
 	"fmt"
-	"io"
 )
 
-// AddDevice adds a writing device to the User in question. Returns an error
-// if name is empty or writer is nil
-func (u *User) AddDevice(name string, w io.Writer) error {
+// AddUser adds a user to the topic. If a user with the name already exists, an error
+// is returned.
+func (t *Topic) AddUser(name string) (*User, error) {
 	if name == "" {
-		return fmt.Errorf("name is required")
+		return nil, fmt.Errorf("name is required")
 	}
 
-	if w == nil {
-		return fmt.Errorf("writer is nil")
+	if t.userExists(name) {
+		return nil, fmt.Errorf("user with name %q already exists", name)
 	}
 
-	if u.deviceExists(name) {
-		return fmt.Errorf("device with name %q already exists", name)
+	user := &User{
+		Name:    name,
+		devices: make([]*Device, 0),
 	}
 
-	d := &Device{
-		Name:   name,
-		writer: w,
-	}
+	t.doAddUser(user)
 
-	u.doAddDevice(d)
-
-	return nil
+	return user, nil
 }
 
-func (u *User) doAddDevice(device *Device) {
-	u.rw.Lock()
-	defer u.rw.Unlock()
+func (t *Topic) userExists(name string) bool {
+	t.rw.RLock()
+	defer t.rw.RUnlock()
+	_, ok := t.users[name]
 
-	u.devices = append(u.devices, device)
+	return ok
 }
 
-func (u *User) deviceExists(name string) bool {
-	u.rw.RLock()
-	defer u.rw.RUnlock()
-
-	for _, d := range u.devices {
-		if d.Name == name {
-			return true
-		}
-	}
-
-	return false
+func (t *Topic) doAddUser(user *User) {
+	t.rw.Lock()
+	t.users[user.Name] = user
+	t.rw.Unlock()
 }
 
-/*
-	We only need RegisterDevice, but Device should have a user
-	or some other identifier to it, so that when registering,
-	we can register the device with an identifier.
-
-	Meaning, that we can WriteTo(identifier) would write to
-	all devices. But we also need a deviceID of some sort to
-	be able to write to a specific device.
-
-	Also deviceLabels, so we can write to a lot of devices
-	irrespective of the "owners".
-*/
+func (t *Topic) doDeleteUser(user *User) {
+	t.rw.Lock()
+	delete(t.users, user.Name)
+	t.rw.Unlock()
+}

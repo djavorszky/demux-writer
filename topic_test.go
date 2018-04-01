@@ -1,8 +1,10 @@
 package demux
 
-import "testing"
+import (
+	"testing"
+)
 
-func TestTopic_AddUser(t *testing.T) {
+func TestNewTopic(t *testing.T) {
 	type args struct {
 		name string
 	}
@@ -16,15 +18,11 @@ func TestTopic_AddUser(t *testing.T) {
 		// Duplicate name has to come after Valid name!
 		{"Duplicate name", args{"name"}, true},
 	}
-	topic, _ := NewTopic("TestTopic_AddUser")
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var (
-				user *User
-				err  error
-			)
-			if user, err = topic.AddUser(tt.args.name); (err != nil) != tt.wantErr {
-				t.Errorf("Topic.AddUser() error = %v, wantErr %v", err, tt.wantErr)
+			got, err := NewTopic(tt.args.name)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("NewTopic() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
@@ -32,29 +30,9 @@ func TestTopic_AddUser(t *testing.T) {
 				return
 			}
 
-			if user == nil {
-				t.Errorf("User is nil")
+			if got.users == nil {
+				t.Errorf("NewTopic() returned with nil Users map")
 				return
-			}
-
-			if user.Name != tt.args.name {
-				t.Errorf("User added with wrong name. Expected: %q, got: %q", tt.args.name, user.Name)
-				return
-			}
-
-			addedUser, ok := topic.users[tt.args.name]
-			if !ok {
-				t.Errorf("User should have been added, wasn't")
-				return
-			}
-
-			if addedUser.Name != user.Name {
-				t.Errorf("Expected user to be added under name %q, got %q", user.Name, addedUser.Name)
-				return
-			}
-
-			if user.devices == nil {
-				t.Errorf("Devices added with nil slice")
 			}
 		})
 	}
