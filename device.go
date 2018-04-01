@@ -27,6 +27,63 @@ func (t *Topic) UnregisterDevice(userID, deviceID string) {
 	t.getUser(userID).deleteDevice(deviceID)
 }
 
+// WriteToUser writes the message to all the devices a specific user has.
+// Returns an error if the user does not exist.
+func (t *Topic) WriteToUser(userID string, message []byte) error {
+	if userID == "" {
+		return fmt.Errorf("userID is empty")
+	}
+
+	if !t.userExists(userID) {
+		return fmt.Errorf("user %q does not exist", userID)
+	}
+
+	u := t.getUser(userID)
+	for _, d := range u.devices {
+		fmt.Println(d)
+		d.writer.Write(message)
+	}
+
+	return nil
+}
+
+// WriteToDevice writes the message to a specific user's specific device. Returns
+// an error if the user does not exist or does not have a device specified by
+// the deviceID
+func (t *Topic) WriteToDevice(userID, deviceID string, message []byte) error {
+	d, err := t.getDevice(userID, deviceID)
+	if err != nil {
+		return fmt.Errorf("couldn't get device: %v", err)
+	}
+
+	d.writer.Write(message)
+
+	return nil
+}
+
+func (t *Topic) getDevice(userID, deviceID string) (*Device, error) {
+	if userID == "" {
+		return nil, fmt.Errorf("userID is empty")
+	}
+
+	if deviceID == "" {
+		return nil, fmt.Errorf("deviceID is empty")
+	}
+
+	if !t.userExists(userID) {
+		return nil, fmt.Errorf("user %q does not exist", userID)
+	}
+
+	u := t.getUser(userID)
+	if !u.deviceExists(deviceID) {
+		return nil, fmt.Errorf("device %q does not exist for user %q", deviceID, userID)
+	}
+
+	device := u.doGetDevice(deviceID)
+
+	return device, nil
+}
+
 func (d *Device) validate() error {
 	if d.UserID == "" {
 		return fmt.Errorf("userID required")
@@ -41,6 +98,13 @@ func (d *Device) validate() error {
 	}
 
 	return nil
+}
+
+func (u *User) doGetDevice(deviceID string) *Device {
+	u.rw.RLock()
+	defer u.rw.RUnlock()
+
+	return u.devices[deviceID]
 }
 
 func (u *User) doAddDevice(device *Device) {
