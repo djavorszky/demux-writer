@@ -28,7 +28,7 @@ func TestDevice_validate(t *testing.T) {
 			d := &Device{
 				UserID:   tt.fields.UserID,
 				DeviceID: tt.fields.DeviceID,
-				writer:   tt.fields.writer,
+				Writer:   tt.fields.writer,
 			}
 			if err := d.validate(); (err != nil) != tt.wantErr {
 				t.Errorf("Device.validate() error = %v, wantErr %v", err, tt.wantErr)
@@ -48,13 +48,13 @@ func TestTopic_WriteToDevice(t *testing.T) {
 	topic.RegisterDevice(&Device{
 		UserID:   userID,
 		DeviceID: goodDeviceID,
-		writer:   &goodBuffer,
+		Writer:   &goodBuffer,
 	})
 
 	topic.RegisterDevice(&Device{
 		UserID:   "non-existent",
 		DeviceID: "non-existent",
-		writer:   &badBuffer,
+		Writer:   &badBuffer,
 	})
 
 	type args struct {
@@ -112,19 +112,19 @@ func TestTopic_WriteToUser(t *testing.T) {
 	topic.RegisterDevice(&Device{
 		UserID:   userID,
 		DeviceID: "ok",
-		writer:   &goodBufferOne,
+		Writer:   &goodBufferOne,
 	})
 
 	topic.RegisterDevice(&Device{
 		UserID:   userID,
 		DeviceID: "okagain",
-		writer:   &goodBufferTwo,
+		Writer:   &goodBufferTwo,
 	})
 
 	topic.RegisterDevice(&Device{
 		UserID:   "non-existent",
 		DeviceID: "non-existent",
-		writer:   &badBuffer,
+		Writer:   &badBuffer,
 	})
 
 	type args struct {

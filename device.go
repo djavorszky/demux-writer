@@ -41,7 +41,7 @@ func (t *Topic) WriteToUser(userID string, message []byte) error {
 	u := t.getUser(userID)
 	for _, d := range u.devices {
 		fmt.Println(d)
-		d.writer.Write(message)
+		d.Writer.Write(message)
 	}
 
 	return nil
@@ -56,7 +56,7 @@ func (t *Topic) WriteToDevice(userID, deviceID string, message []byte) error {
 		return fmt.Errorf("couldn't get device: %v", err)
 	}
 
-	d.writer.Write(message)
+	d.Writer.Write(message)
 
 	return nil
 }
@@ -93,7 +93,7 @@ func (d *Device) validate() error {
 		return fmt.Errorf("deviceID required")
 	}
 
-	if d.writer == nil {
+	if d.Writer == nil {
 		return fmt.Errorf("writer must be non-nil")
 	}
 

@@ -104,12 +104,12 @@ func TestTopic_RegisterDevice(t *testing.T) {
 		d       *Device
 		wantErr bool
 	}{
-		{"Valid", &Device{UserID: "valid", DeviceID: "valid", writer: &testIOWriter}, false},
-		{"Missing UserID", &Device{UserID: "", DeviceID: "valid", writer: &testIOWriter}, true},
-		{"Missing DeviceID", &Device{UserID: "valid", DeviceID: "", writer: &testIOWriter}, true},
-		{"Nil Writer", &Device{UserID: "valid", DeviceID: "valid", writer: nil}, true},
+		{"Valid", &Device{UserID: "valid", DeviceID: "valid", Writer: &testIOWriter}, false},
+		{"Missing UserID", &Device{UserID: "", DeviceID: "valid", Writer: &testIOWriter}, true},
+		{"Missing DeviceID", &Device{UserID: "valid", DeviceID: "", Writer: &testIOWriter}, true},
+		{"Nil Writer", &Device{UserID: "valid", DeviceID: "valid", Writer: nil}, true},
 		// Duplicate
-		{"Duplicate DeviceID for UserID", &Device{UserID: "valid", DeviceID: "valid", writer: &testIOWriter}, true},
+		{"Duplicate DeviceID for UserID", &Device{UserID: "valid", DeviceID: "valid", Writer: &testIOWriter}, true},
 	}
 	topic, _ := NewTopic("TestTopic_RegisterDevice")
 	for _, tt := range tests {
@@ -176,7 +176,7 @@ func TestTopic_UnregisterDevice(t *testing.T) {
 			topic.RegisterDevice(&Device{
 				UserID:   tt.args.userID,
 				DeviceID: tt.args.deviceID,
-				writer:   &testIOWriter,
+				Writer:   &testIOWriter,
 			})
 
 			topic.UnregisterDevice(tt.todelete.userID, tt.todelete.deviceID)

@@ -33,7 +33,7 @@ type User struct {
 type Device struct {
 	UserID   string
 	DeviceID string
-	writer   io.Writer
+	Writer   io.Writer
 }
 
 // NewTopic creates a topic with empty initialized Users and Devices. Calling
